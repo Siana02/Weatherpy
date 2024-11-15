@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to bottom right, #6a5acd, #ff69b4);
+            color: #333;
+            text-align: center;
+            padding: 40px;
+        }
+        h1 {
+            font-family: 'Pacifico', cursive;
+            color: #fff;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        .form-container {
+            margin: 20px auto;
+            max-width: 400px;
+            background: #ffffffcc;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        input {
+            width: calc(100% - 24px);
+            padding: 12px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border: 2px solid #ff6347;
+            outline: none;
+        }
+        input:focus {
+            border-color: #ff1493;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            background-color: #ff6347;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #ff1493;
+        }
+        #weather-result {
+            margin-top: 20px;
+            display: none;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #weather-result h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #6a5acd;
+        }
+        #temperature, #description {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            color: #ff6347;
+        }
+        .error {
+            font-size: 1.2rem;
+            color: #ff1493;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Weather App</h1>
+        <p>Enter your city to get current weather</p>
+        <form id="weather-form">
+            <input type="text" id="city" name="city" placeholder="Enter city name" required>
+            <button type="submit">Get Weather</button>
+        </form>
+
+        <div id="weather-result"></div>
+    </div>
+
+<script>
+    document.getElementById("weather-form").addEventListener("submit", function(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        var city = document.getElementById("city").value;  // Get the city name
+        var weatherResult = document.getElementById("weather-result");
+        weatherResult.innerHTML = "Loading...";  // Show loading message
+
+        // Use the Django-generated URL from the template tag
+        var weatherUrl = "{% url 'get_weather' %}";  // Django resolves this to the actual URL
+
+        // AJAX request to the Django backend (get_weather view)
+        fetch(weatherUrl + "?city=" + city)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    weatherResult.innerHTML = `<p class="error">${data.error}</p>`;
+                    weatherResult.style.display = 'block';  // Make the result visible
+                } else {
+                    weatherResult.innerHTML = `
+                        <h2>Weather Details</h2>
+                        <p id="temperature">Temperature: ${data.main.temp} °C</p>
+                        <p id="description">Description: ${data.weather[0].description}</p>
+                        <p>Sunrise: ${new Date(data.sys.sunrise * 1000).toLocaleTimeString()}</p>
+                        <p>Sunset: ${new Date(data.sys.sunset * 1000).toLocaleTimeString()}</p>
+                    `;
+                    weatherResult.style.display = 'block';  // Make the result visible
+                }
+            })
+            .catch(error => {
+                weatherResult.innerHTML = `<p class="error">An error occurred: ${error.message}</p>`;
+                weatherResult.style.display = 'block';  // Make the result visible
+            });
+    });
+</script>
+</body>
+</html>
